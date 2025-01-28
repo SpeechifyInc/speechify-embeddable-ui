@@ -1,6 +1,10 @@
 import { initializePlayer } from "./src/player/player.ts";
 
 initializePlayer({
-  audioGenerate: () => {},
-  audioStream: () => {},
+  audioGenerate: (...args) => {
+    console.log(args);
+  },
+  audioStream: (...args) => {
+    console.log(args);
+  },
 });

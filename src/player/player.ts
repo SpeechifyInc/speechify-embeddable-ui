@@ -44,18 +44,23 @@ export const initializePlayer = ({
 
     constructor() {
       super();
-      this.content = this.getAttribute("content") ?? "";
-
       const shadowRoot = this.attachShadow({ mode: "open" });
       shadowRoot.appendChild(template.content.cloneNode(true));
 
       this.audioElement = this.createAudioElement();
 
       this.addEventListeners();
+
+      this.content = this.getAttribute("content") ?? "";
+
       this.initializeAudio(
         this.getAttribute("generation-type") as "audio" | "stream",
         this.getAttribute("voice-id") ?? ""
       );
+
+      console.log(this.getAttribute("generation-type"));
+      console.log(this.getAttribute("voice-id"));
+      console.log(this.content);
       this.playButton.addEventListener(
         "click",
         this.togglePlayPause.bind(this)
