@@ -8,8 +8,14 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/speechify-embeddable-ui.js",
-      "require": "./dist/speechify-embeddable-ui.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/speechify-embeddable-ui.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/speechify-embeddable-ui.umd.cjs"
+      }
     }
   },
   "files": [
