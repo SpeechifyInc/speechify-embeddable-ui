@@ -1,6 +1,6 @@
 {
   "name": "@speechify/embeddable-ui",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Official Speechify Embeddable UI Components Library",
   "type": "module",
   "main": "./dist/speechify-embeddable-ui.umd.cjs",
