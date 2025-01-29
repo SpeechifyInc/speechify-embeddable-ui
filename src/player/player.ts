@@ -48,23 +48,29 @@ export const initializePlayer = ({
       shadowRoot.appendChild(template.content.cloneNode(true));
 
       this.audioElement = this.createAudioElement();
-
       this.addEventListeners();
 
-      this.content = this.getAttribute("content") ?? "";
+      // Initialize with empty values, will be updated in connectedCallback
+      this.content = "";
 
-      this.initializeAudio(
-        this.getAttribute("generation-type") as "audio" | "stream",
-        this.getAttribute("voice-id") ?? ""
-      );
-
-      console.log(this.getAttribute("generation-type"));
-      console.log(this.getAttribute("voice-id"));
-      console.log(this.content);
       this.playButton.addEventListener(
         "click",
         this.togglePlayPause.bind(this)
       );
+    }
+
+    connectedCallback() {
+      // Get attributes after element is connected to DOM
+      this.content = this.getAttribute("content") ?? "";
+
+      const generationType = this.getAttribute("generation-type") as
+        | "audio"
+        | "stream";
+      const voiceId = this.getAttribute("voice-id") ?? "";
+
+      if (this.content && generationType && voiceId) {
+        this.initializeAudio(generationType, voiceId);
+      }
     }
 
     private getElement<T extends HTMLElement>(selector: string): T {
@@ -291,6 +297,14 @@ export const initializePlayer = ({
         this.style.height = newValue;
       } else if (name === "content" && newValue !== null) {
         this.content = newValue;
+        // Re-initialize audio when content changes
+        const generationType = this.getAttribute("generation-type") as
+          | "audio"
+          | "stream";
+        const voiceId = this.getAttribute("voice-id") ?? "";
+        if (generationType && voiceId) {
+          this.initializeAudio(generationType, voiceId);
+        }
       }
     }
   }
