@@ -38,18 +38,13 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
     private isStreaming = false;
 
     static get observedAttributes() {
-      return [
-        "src",
-        "width",
-        "height",
-        "content",
-        "generation-type",
-        "voice-id",
-      ];
+      return ["content", "generation-type", "voice-id"];
     }
 
     get playButton() {
-      return this.getElement<HTMLButtonElement>("#speechify-btn-inline-play");
+      return this.getElement<HTMLButtonElement>(
+        ".speechify-player-btn-inline-play"
+      );
     }
 
     constructor() {
@@ -90,13 +85,6 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
       if (!newValue) return;
 
       switch (name) {
-        case "src":
-          this.audioElement.src = newValue;
-          break;
-        case "width":
-        case "height":
-          this.style[name] = newValue;
-          break;
         case "content":
           this.content = newValue;
           const generationType = this.getAttribute("generation-type") as
@@ -132,7 +120,7 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
       this.audioElement.addEventListener("ended", this.onAudioEnd.bind(this));
 
       const progressBarContainer = this.getElement<HTMLDivElement>(
-        ".progress-bar-container"
+        ".speechify-player-progress-bar-container"
       );
       progressBarContainer.addEventListener(
         "click",
@@ -159,7 +147,9 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
     ) {
       this.isStreaming = generationType === "stream";
       if (this.isStreaming) {
-        this.getElement<HTMLDivElement>("#total-duration").innerHTML = "...";
+        this.getElement<HTMLDivElement>(
+          ".speechify-player-total-duration"
+        ).innerHTML = "...";
       }
       void (this.isStreaming
         ? this.generateAudioStream(voiceId)
@@ -171,13 +161,14 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
       const duration = this.audioElement.duration;
       const progressPercentage = (currentTime / duration) * 100;
 
-      this.getElement<HTMLDivElement>("#current-progress").innerHTML =
-        this.formatTime(currentTime);
       this.getElement<HTMLDivElement>(
-        ".progress-bar-fill"
+        ".speechify-player-current-progress"
+      ).innerHTML = this.formatTime(currentTime);
+      this.getElement<HTMLDivElement>(
+        ".speechify-player-progress-bar-fill"
       ).style.width = `${progressPercentage}%`;
       this.getElement<HTMLDivElement>(
-        ".progress-bar-handle"
+        ".speechify-player-progress-bar-handle"
       ).style.left = `${progressPercentage}%`;
     }
 
@@ -194,13 +185,15 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
     private onProgressBarClick(event: MouseEvent) {
       this.handleProgressBarInteraction(
         event.clientX,
-        this.getElement<HTMLDivElement>(".progress-bar-container")
+        this.getElement<HTMLDivElement>(
+          ".speechify-player-progress-bar-container"
+        )
       );
     }
 
     private onProgressBarMouseDown(_event: MouseEvent) {
       const progressContainer = this.getElement<HTMLDivElement>(
-        ".progress-bar-container"
+        ".speechify-player-progress-bar-container"
       );
 
       const onMouseMove = (moveEvent: MouseEvent) => {
@@ -263,9 +256,9 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
     }
 
     private toggleLoadingSpinner(isLoading: boolean) {
-      this.getElement<HTMLDivElement>("#loading").style.display = isLoading
-        ? "block"
-        : "none";
+      this.getElement<HTMLDivElement>(
+        ".speechify-player-loading"
+      ).style.display = isLoading ? "block" : "none";
       this.playButton.style.display = isLoading ? "none" : "block";
     }
 
@@ -290,16 +283,18 @@ export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
 
       metaAudioElement.onloadedmetadata = () => {
         this.audioDuration = metaAudioElement.duration;
-        this.getElement<HTMLDivElement>("#total-duration").innerHTML =
-          this.formatTime(metaAudioElement.duration);
+        this.getElement<HTMLDivElement>(
+          ".speechify-player-total-duration"
+        ).innerHTML = this.formatTime(metaAudioElement.duration);
       };
     }
 
     private updateDurationDisplay(duration: number) {
       this.audioDuration = duration;
       if (!this.isStreaming) {
-        this.getElement<HTMLDivElement>("#total-duration").innerHTML =
-          this.formatTime(duration);
+        this.getElement<HTMLDivElement>(
+          ".speechify-player-total-duration"
+        ).innerHTML = this.formatTime(duration);
       }
     }
 

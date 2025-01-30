@@ -1,25 +1,24 @@
-<div id="speechify-root">
+<div>
   <div>
-    <!-- Link to the CSS file -->
     <style>
-      .icon {
+      .speechify-player-icon {
         display: inline-block;
         vertical-align: middle;
         overflow: hidden;
       }
 
-      .player-controls {
+      .speechify-player-controls {
         display: flex;
         align-items: center;
       }
 
-      .mobile-web-ui .player-container {
+      .mobile-web-ui .speechify-player-container {
         width: 110%;
         margin-left: -5%;
         margin-bottom: 12px;
       }
 
-      .progress-bar-container {
+      .speechify-player-progress-bar-container {
         position: relative;
         flex: 1;
         margin: 0 16px;
@@ -29,7 +28,7 @@
         cursor: pointer;
       }
 
-      .progress-bar-input {
+      .speechify-player-progress-bar-input {
         opacity: 0;
         position: absolute;
         top: 0;
@@ -40,23 +39,23 @@
         margin: 0;
       }
 
-      .progress-bar-track {
+      .speechify-player-progress-bar-track {
         background-color: rgba(0, 0, 0, 0.08);
         flex: 1;
         transition: all 0.2s;
         cursor: pointer;
       }
 
-      .progress-bar-fill {
+      .speechify-player-progress-bar-fill {
         height: 2px;
         background-color: #000;
       }
 
-      .mobile-web-ui .progress-bar-fill {
+      .mobile-web-ui .speechify-player-progress-bar-fill {
         height: 3px;
       }
 
-      .progress-bar-handle {
+      .speechify-player-progress-bar-handle {
         height: 10px;
         width: 10px;
         position: absolute;
@@ -65,7 +64,7 @@
         border-radius: 5px;
       }
 
-      .time-display {
+      .speechify-player-time-display {
         font-size: 12px;
         color: #757575;
         font-weight: 500;
@@ -73,24 +72,24 @@
         flex-shrink: 0;
       }
 
-      .time-display:not(:last-child):not(:first-child) {
+      .speechify-player-time-display:not(:last-child):not(:first-child) {
         text-align: center;
       }
 
-      .mobile-web-ui .time-display:first-child {
+      .mobile-web-ui .speechify-player-time-display:first-child {
         transform: translate(36px, 16px);
       }
 
-      .mobile-web-ui .time-display:last-child {
+      .mobile-web-ui .speechify-player-time-display:last-child {
         text-align: right;
         transform: translate(-36px, 16px);
       }
 
-      .mobile-web-ui .time-display {
+      .mobile-web-ui .speechify-player-time-display {
         font-weight: 500;
       }
 
-      .control-button {
+      .speechify-player-control-button {
         width: 40px;
         height: 40px;
         color: #000;
@@ -99,11 +98,11 @@
         transition: all 0.2s;
       }
 
-      .control-button:hover {
+      .speechify-player-control-button:hover {
         opacity: 1;
       }
 
-      .player-wrapper {
+      .speechify-player-wrapper {
         border: 1px solid rgba(0, 0, 0, 0.1);
         padding: 10px 16px 8px 8px;
         border-radius: 8px;
@@ -113,22 +112,22 @@
         overflow: hidden;
       }
 
-      .player-info {
+      .speechify-player-info {
         padding: 0 4px 0 8px;
         flex: 1;
       }
 
-      .player-title {
+      .speechify-player-title {
         font-size: 12px;
         font-weight: 500;
         color: var(--color-glass-500);
       }
 
-      .player-controls-container {
+      .speechify-player-controls-container {
         margin-top: 3px;
       }
 
-      .speechify-logo {
+      .speechify-player-logo {
         color: #000;
         display: block;
         margin-left: 12px;
@@ -137,11 +136,11 @@
         transition: opacity 0.2s;
       }
 
-      .speechify-logo:hover {
+      .speechify-player-logo:hover {
         opacity: 1;
       }
 
-      * {
+      .speechify-player-root {
         --color-default-blue: #2137fc;
         --color-electric-300: #6a79fd;
         --color-electric-250: #b4bbfe;
@@ -156,9 +155,6 @@
         --color-glass-900: #05070b;
         --color-pill-player: #006341;
         --color-skim-paragraph-start: #ce1625;
-      }
-
-      .player-root {
         margin-top: 32px;
         font-variant: normal;
         font-feature-settings: normal;
@@ -167,9 +163,12 @@
           "Helvetica Neue", sans-serif;
       }
     </style>
-    <div id="player" class="player-root">
-      <div class="player-wrapper" style="background-color: rgb(255, 255, 255)">
-        <div id="speechify-btn-inline-play" style="display: none">
+    <div class="speechify-player-root">
+      <div
+        class="speechify-player-wrapper"
+        style="background-color: rgb(255, 255, 255)"
+      >
+        <div class="speechify-player-btn-inline-play" style="display: none">
           <!-- Play Icon SVG will be injected here -->
           <svg
             viewBox="0 0 24 24"
@@ -180,12 +179,15 @@
             fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
             style="color: rgb(20, 82, 225)"
-            class="icon icon--play"
+            class="speechify-player-icon speechify-player-icon--play"
           >
             <path d="M8 5v14l11-7z"></path>
           </svg>
         </div>
-        <div id="loading" style="display: block; text-align: center">
+        <div
+          class="speechify-player-loading"
+          style="display: block; text-align: center"
+        >
           <style>
             @keyframes spin {
               0% {
@@ -197,7 +199,7 @@
             }
           </style>
           <div
-            class="loading-spinner"
+            class="speechify-player-loading-spinner"
             style="
               width: 24px;
               height: 24px;
@@ -208,8 +210,8 @@
             "
           ></div>
         </div>
-        <div class="player-info">
-          <div class="player-title">
+        <div class="speechify-player-info">
+          <div class="speechify-player-title">
             Listen with
             <div
               style="
@@ -222,38 +224,36 @@
               Speechify
             </div>
           </div>
-          <div class="player-controls-container">
-            <div class="player-controls">
+          <div class="speechify-player-controls-container">
+            <div class="speechify-player-controls">
               <div
                 style="color: var(--color-glass-500)"
-                class="time-display"
-                id="current-progress"
+                class="speechify-player-time-display speechify-player-current-progress"
               >
                 0:00
               </div>
-              <div class="progress-bar-container">
-                <div class="progress-bar-track">
+              <div class="speechify-player-progress-bar-container">
+                <div class="speechify-player-progress-bar-track">
                   <div
                     style="
                       width: calc(0% - 5px);
                       background-color: rgb(20, 82, 225);
                     "
-                    class="progress-bar-fill"
+                    class="speechify-player-progress-bar-fill"
                   ></div>
                   <div
                     style="
                       left: calc(0% - 5px);
                       background-color: rgb(20, 82, 225);
                     "
-                    class="progress-bar-handle"
+                    class="speechify-player-progress-bar-handle"
                   ></div>
                 </div>
-                <div class="progress-bar-input"></div>
+                <div class="speechify-player-progress-bar-input"></div>
               </div>
               <div
                 style="color: var(--color-glass-500)"
-                class="time-display"
-                id="total-duration"
+                class="speechify-player-time-display speechify-player-total-duration"
               >
                 0:00
               </div>
@@ -271,7 +271,7 @@
             xmlns="http://www.w3.org/2000/svg"
             fill="currentColor"
             style="color: rgb(20, 82, 225)"
-            class="speechify-logo"
+            class="speechify-player-logo"
           >
             <path
               fill-rule="evenodd"
