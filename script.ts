@@ -1,10 +1,9 @@
 import { initializePlayer } from "./src/player/player.ts";
+import { Speechify } from "@speechify/api-sdk";
 
-initializePlayer({
-  audioGenerate: (...args) => {
-    console.log(args);
-  },
-  audioStream: (...args) => {
-    console.log(args);
-  },
+const speechify = new Speechify({
+  apiKey: "",
+  strict: false,
 });
+
+initializePlayer(speechify);

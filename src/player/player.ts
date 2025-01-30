@@ -26,19 +26,27 @@ declare global {
   }
 }
 
-export const initializePlayer = ({
-  audioGenerate,
-  audioStream,
-}: InitializeSpeechifyPlayerInput) => {
+export const initializePlayer = (speechify: InitializeSpeechifyPlayerInput) => {
   const template = document.createElement("template");
   template.innerHTML = `${html}`;
 
   class AudioPlayer extends HTMLElement {
     private audioDuration = 0;
-
-    private content: string;
+    private content = ""; // Initialize with empty value
     private audioElement: HTMLAudioElement;
     private isPlaying = false;
+    private isStreaming = false;
+
+    static get observedAttributes() {
+      return [
+        "src",
+        "width",
+        "height",
+        "content",
+        "generation-type",
+        "voice-id",
+      ];
+    }
 
     get playButton() {
       return this.getElement<HTMLButtonElement>("#speechify-btn-inline-play");
@@ -51,10 +59,6 @@ export const initializePlayer = ({
 
       this.audioElement = this.createAudioElement();
       this.addEventListeners();
-
-      // Initialize with empty values, will be updated in connectedCallback
-      this.content = "";
-
       this.playButton.addEventListener(
         "click",
         this.togglePlayPause.bind(this)
@@ -62,16 +66,45 @@ export const initializePlayer = ({
     }
 
     connectedCallback() {
-      // Get attributes after element is connected to DOM
       this.content = this.getAttribute("content") ?? "";
-
       const generationType = this.getAttribute("generation-type") as
-        | "audio"
+        | "speech"
         | "stream";
       const voiceId = this.getAttribute("voice-id") ?? "";
 
-      if (this.content && generationType && voiceId) {
-        this.initializeAudio(generationType, voiceId);
+      this.initializeAudioIfParamsExist(generationType, voiceId);
+    }
+
+    disconnectedCallback() {
+      this.playButton.removeEventListener(
+        "click",
+        this.togglePlayPause.bind(this)
+      );
+    }
+
+    attributeChangedCallback(
+      name: string,
+      _: string | null,
+      newValue: string | null
+    ) {
+      if (!newValue) return;
+
+      switch (name) {
+        case "src":
+          this.audioElement.src = newValue;
+          break;
+        case "width":
+        case "height":
+          this.style[name] = newValue;
+          break;
+        case "content":
+          this.content = newValue;
+          const generationType = this.getAttribute("generation-type") as
+            | "speech"
+            | "stream";
+          const voiceId = this.getAttribute("voice-id") ?? "";
+          this.initializeAudioIfParamsExist(generationType, voiceId);
+          break;
       }
     }
 
@@ -97,64 +130,81 @@ export const initializePlayer = ({
         this.updateProgressBar.bind(this)
       );
       this.audioElement.addEventListener("ended", this.onAudioEnd.bind(this));
-      this.getElement<HTMLDivElement>(
+
+      const progressBarContainer = this.getElement<HTMLDivElement>(
         ".progress-bar-container"
-      ).addEventListener("click", this.onProgressBarClick.bind(this));
-      this.getElement<HTMLDivElement>(
-        ".progress-bar-container"
-      ).addEventListener("mousedown", this.onProgressBarMouseDown.bind(this));
+      );
+      progressBarContainer.addEventListener(
+        "click",
+        this.onProgressBarClick.bind(this)
+      );
+      progressBarContainer.addEventListener(
+        "mousedown",
+        this.onProgressBarMouseDown.bind(this)
+      );
+    }
+
+    private initializeAudioIfParamsExist(
+      generationType?: "speech" | "stream",
+      voiceId?: string
+    ) {
+      if (!this.content || !generationType || !voiceId) return;
+
+      this.initializeAudio(generationType, voiceId);
     }
 
     private initializeAudio(
-      generationType: "audio" | "stream",
+      generationType: "speech" | "stream",
       voiceId: string
     ) {
-      if (generationType === "stream") {
-        void this.generateAudioStream(voiceId);
-      } else {
-        void this.generateAudio(voiceId);
+      this.isStreaming = generationType === "stream";
+      if (this.isStreaming) {
+        this.getElement<HTMLDivElement>("#total-duration").innerHTML = "...";
       }
+      void (this.isStreaming
+        ? this.generateAudioStream(voiceId)
+        : this.generateAudio(voiceId));
     }
 
     private updateProgressBar() {
-      const currentProgress =
-        this.getElement<HTMLDivElement>("#current-progress");
-      const progressBar = this.getElement<HTMLDivElement>(".progress-bar-fill");
-      const progressPoint = this.getElement<HTMLDivElement>(
-        ".progress-bar-handle"
-      );
       const currentTime = this.audioElement.currentTime;
       const duration = this.audioElement.duration;
       const progressPercentage = (currentTime / duration) * 100;
 
-      currentProgress.innerHTML = this.formatTime(currentTime);
-      progressBar.style.width = `${progressPercentage}%`;
-      progressPoint.style.left = `${progressPercentage}%`;
+      this.getElement<HTMLDivElement>("#current-progress").innerHTML =
+        this.formatTime(currentTime);
+      this.getElement<HTMLDivElement>(
+        ".progress-bar-fill"
+      ).style.width = `${progressPercentage}%`;
+      this.getElement<HTMLDivElement>(
+        ".progress-bar-handle"
+      ).style.left = `${progressPercentage}%`;
+    }
+
+    private handleProgressBarInteraction(
+      clientX: number,
+      container: HTMLDivElement
+    ) {
+      const rect = container.getBoundingClientRect();
+      const offsetX = clientX - rect.left;
+      const percentage = Math.min(Math.max(offsetX / rect.width, 0), 1);
+      this.audioElement.currentTime = percentage * this.audioDuration;
     }
 
     private onProgressBarClick(event: MouseEvent) {
-      const progressContainer = this.getElement<HTMLDivElement>(
-        ".progress-bar-container"
+      this.handleProgressBarInteraction(
+        event.clientX,
+        this.getElement<HTMLDivElement>(".progress-bar-container")
       );
-      const rect = progressContainer.getBoundingClientRect();
-      const offsetX = event.clientX - rect.left;
-      const totalWidth = rect.width;
-      const percentage = offsetX / totalWidth;
-
-      this.audioElement.currentTime = percentage * this.audioDuration;
     }
 
     private onProgressBarMouseDown(_event: MouseEvent) {
       const progressContainer = this.getElement<HTMLDivElement>(
         ".progress-bar-container"
       );
-      const onMouseMove = (moveEvent: MouseEvent) => {
-        const rect = progressContainer.getBoundingClientRect();
-        const offsetX = moveEvent.clientX - rect.left;
-        const totalWidth = rect.width;
-        const percentage = Math.min(Math.max(offsetX / totalWidth, 0), 1);
 
-        this.audioElement.currentTime = percentage * this.audioDuration;
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        this.handleProgressBarInteraction(moveEvent.clientX, progressContainer);
       };
 
       const onMouseUp = () => {
@@ -172,24 +222,26 @@ export const initializePlayer = ({
     }
 
     private async generateAudio(voiceId: string) {
-      const audio = await audioGenerate({ input: this.content, voiceId });
-      const audioBlob = audio.audioData;
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = await speechify.audioGenerate({
+        input: this.content,
+        voiceId,
+      });
+      const audioUrl = URL.createObjectURL(audio.audioData);
       this.audioElement.src = audioUrl;
 
       this.audioElement.onloadedmetadata = () => {
-        this.audioDuration = this.audioElement.duration;
-        this.getElement<HTMLDivElement>("#total-duration").innerHTML =
-          this.formatTime(this.audioDuration);
+        this.updateDurationDisplay(this.audioElement.duration);
         this.toggleLoadingSpinner(false);
       };
     }
 
     private async generateAudioStream(voiceId: string) {
-      const response = await audioStream({ input: this.content, voiceId });
+      const response = await speechify.audioStream({
+        input: this.content,
+        voiceId,
+      });
       const mediaSource = new MediaSource();
-      const audioUrl = URL.createObjectURL(mediaSource);
-      this.audioElement.src = audioUrl;
+      this.audioElement.src = URL.createObjectURL(mediaSource);
       this.toggleLoadingSpinner(false);
 
       mediaSource.addEventListener("sourceopen", async () => {
@@ -222,14 +274,11 @@ export const initializePlayer = ({
       value: Uint8Array,
       chunks: Uint8Array[]
     ) {
-      const promise = new Promise<void>((resolve) => {
-        sourceBuffer.onupdateend = (_ev: Event) => {
-          resolve();
-        };
+      await new Promise<void>((resolve) => {
+        sourceBuffer.onupdateend = () => resolve();
+        sourceBuffer.appendBuffer(value);
+        chunks.push(value);
       });
-      sourceBuffer.appendBuffer(value);
-      chunks.push(value);
-      await promise;
     }
 
     private handleAudioEnd(chunks: Uint8Array[]) {
@@ -242,79 +291,41 @@ export const initializePlayer = ({
       metaAudioElement.onloadedmetadata = () => {
         this.audioDuration = metaAudioElement.duration;
         this.getElement<HTMLDivElement>("#total-duration").innerHTML =
-          this.formatTime(this.audioDuration);
+          this.formatTime(metaAudioElement.duration);
       };
+    }
 
-      this.audioElement.currentTime = this.audioElement.currentTime;
+    private updateDurationDisplay(duration: number) {
+      this.audioDuration = duration;
+      if (!this.isStreaming) {
+        this.getElement<HTMLDivElement>("#total-duration").innerHTML =
+          this.formatTime(duration);
+      }
     }
 
     private formatTime(seconds: number): string {
       const minutes = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
-      return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
-    }
-
-    disconnectedCallback() {
-      this.playButton.removeEventListener(
-        "click",
-        this.togglePlayPause.bind(this)
-      );
+      return `${minutes}:${secs.toString().padStart(2, "0")}`;
     }
 
     private async togglePlayPause() {
       this.isPlaying = !this.isPlaying;
       this.updatePlayButtonIcon();
-      if (this.isPlaying) {
-        await this.audioElement.play();
-      } else {
-        this.audioElement.pause();
-      }
+      await (this.isPlaying
+        ? this.audioElement.play()
+        : this.audioElement.pause());
     }
 
     private updatePlayButtonIcon() {
       this.playButton.innerHTML = this.isPlaying ? pauseIcon : playIcon;
     }
-
-    static get observedAttributes() {
-      return [
-        "src",
-        "width",
-        "height",
-        "content",
-        "generation-type",
-        "voice-id",
-      ];
-    }
-
-    attributeChangedCallback(
-      name: string,
-      _: string | null,
-      newValue: string | null
-    ) {
-      if (name === "src" && newValue !== null) {
-        this.audioElement.src = newValue;
-      } else if (name === "width" && newValue !== null) {
-        this.style.width = newValue;
-      } else if (name === "height" && newValue !== null) {
-        this.style.height = newValue;
-      } else if (name === "content" && newValue !== null) {
-        this.content = newValue;
-        // Re-initialize audio when content changes
-        const generationType = this.getAttribute("generation-type") as
-          | "audio"
-          | "stream";
-        const voiceId = this.getAttribute("voice-id") ?? "";
-        if (generationType && voiceId) {
-          this.initializeAudio(generationType, voiceId);
-        }
-      }
-    }
   }
 
   if (
     typeof window !== "undefined" &&
-    !customElements.get(`speechify-player`)
+    !customElements.get("speechify-player")
   ) {
-    customElements.define(`speechify-player`, AudioPlayer);
+    customElements.define("speechify-player", AudioPlayer);
   }
 };
