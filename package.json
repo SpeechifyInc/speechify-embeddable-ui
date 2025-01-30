@@ -48,5 +48,8 @@
     "web-components"
   ],
   "author": "Speechify",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@speechify/api-sdk": "^2.3.0"
+  }
 }

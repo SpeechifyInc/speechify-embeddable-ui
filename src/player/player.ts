@@ -9,13 +9,15 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      "speechify-player": ISpeechifyPlayerProps;
+      "speechify-player": Partial<ISpeechifyPlayerProps> & {
+        ref?: HTMLElement;
+      };
     }
   }
 
   // for plain js and Angular
   interface HTMLElementTagNameMap {
-    "speechify-player": ISpeechifyPlayerProps;
+    "speechify-player": HTMLElement & ISpeechifyPlayerProps;
   }
 
   // for Vue.js

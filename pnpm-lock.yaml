@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@speechify/api-sdk':
+        specifier: ^2.3.0
+        version: 2.3.0
     devDependencies:
       '@types/node':
         specifier: ^22.12.0
@@ -331,6 +335,9 @@ packages:
 
   '@rushstack/ts-command-line@4.23.3':
     resolution: {integrity: sha512-HazKL8fv4HMQMzrKJCrOrhyBPPdzk7iajUXgsASwjQ8ROo1cmgyqxt/k9+SdmrNLGE1zATgRqMUH3s/6smbRMA==}
+
+  '@speechify/api-sdk@2.3.0':
+    resolution: {integrity: sha512-BsrcSoQsBeuw0hRGtgeQezWaJ1FKL3p0S5gH+7kdqvR4UACAS9O7TLZTbhvVoYsVYYU1ystIlLDcTVHX8MFpiA==}
 
   '@types/argparse@1.0.38':
     resolution: {integrity: sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==}
@@ -906,6 +913,8 @@ snapshots:
       string-argv: 0.3.2
     transitivePeerDependencies:
       - '@types/node'
+
+  '@speechify/api-sdk@2.3.0': {}
 
   '@types/argparse@1.0.38': {}
 

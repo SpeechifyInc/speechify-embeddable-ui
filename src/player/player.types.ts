@@ -1,3 +1,5 @@
+import type { Speechify } from "@speechify/api-sdk";
+
 export interface ISpeechifyPlayerProps {
   content: string;
   "voice-id": string;
@@ -5,6 +7,6 @@ export interface ISpeechifyPlayerProps {
 }
 
 export type InitializeSpeechifyPlayerInput = Pick<
-  any,
+  Speechify,
   "audioGenerate" | "audioStream"
 >;
